@@ -1,3 +1,7 @@
+https://rodscaloppe.github.io/architecture-ml-cerrado/
+
+https://ae613343.predicao-seca-chuva.pages.dev/
+
 # Sistema Integrado de Monitoramento do Cerrado — Previsão de Seca e Chuva
 
 ## Visão Geral
