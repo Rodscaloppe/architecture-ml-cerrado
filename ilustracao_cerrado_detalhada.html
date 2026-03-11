@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Integrado Cerrado - Previsão de Seca e Chuva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0a3f5a 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e2e8f0;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .illustration-section {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 3rem;
+            animation: fadeInLeft 1.2s ease;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+            animation: fadeInRight 1.2s ease;
+        }
+
+        .info-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            border-color: rgba(96, 165, 250, 0.6);
+            transform: translateY(-5px);
+        }
+
+        .info-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #60a5fa;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .spec {
+            background: rgba(100, 116, 139, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border-left: 2px solid #60a5fa;
+            color: #cbd5e1;
+        }
+
+        .spec-value {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .integration-flow {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .flow-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #cbd5e1;
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .flow-item {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(52, 211, 153, 0.1) 100%);
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .flow-item:not(:last-child)::after {
+            content: "→";
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #60a5fa;
+        }
+
+        .flow-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .flow-name {
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        .data-exchange {
+            background: rgba(165, 139, 250, 0.1);
+            border: 1px solid rgba(165, 139, 250, 0.4);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-exchange h4 {
+            color: #a78bfa;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .data-point {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .data-point strong {
+            color: #c4b5fd;
+            min-width: 150px;
+        }
+
+        .legend {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        svg {
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+            width: 100%;
+            height: auto;
+        }
+
+        .cerrado-info {
+            background: linear-gradient(135deg, rgba(212, 202, 78, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .cerrado-info h4 {
+            color: #fbbf24;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .sensors-detail {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .sensor-card {
+            background: rgba(100, 116, 139, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        .sensor-card strong {
+            color: #60a5fa;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .sensor-card p {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌍 Sistema de Monitoramento do Cerrado</h1>
+        <p class="subtitle">3 Estações Integradas: Satélite + Sensores Terrestres + Machine Learning</p>
+    </div>
+
+    <div class="main-container">
+        <!-- Informações Cerrado -->
+        <div class="cerrado-info">
+            <h4>📍 Monitoramento do Bioma Cerrado</h4>
+            <p>O Cerrado é um dos biomas mais vulneráveis às mudanças climáticas. Este sistema integra 3 estações de sensores para monitorar em tempo real temperatura, umidade, pressão e umidade do solo, combinados com dados de satélite (NDVI, evapotranspiração) e algoritmos de machine learning para prever seca e chuva com 2-4 semanas de antecedência.</p>
+        </div>
+
+        <!-- Ilustração SVG -->
+        <div class="illustration-section">
+            <svg viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+                <!-- Definições -->
+                <defs>
+                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:#0f766e;stop-opacity:0.2" />
+                    </linearGradient>
+                    <linearGradient id="cerradoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#d4ca4e;stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:#92400e;stop-opacity:0.5" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Céu -->
+                <rect width="1000" height="350" fill="url(#skyGradient)"/>
+                
+                <!-- Cerrado -->
+                <rect y="350" width="1000" height="350" fill="url(#cerradoGradient)"/>
+
+                <!-- Sol -->
+                <circle cx="850" cy="80" r="50" fill="#fbbf24" opacity="0.8"/>
+                <circle cx="850" cy="80" r="50" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.4" class="pulse"/>
+
+                <!-- 🛰️ SATÉLITE (Centro Alto) -->
+                <g id="satelite" transform="translate(500, 50)">
+                    <rect x="-40" y="-20" width="80" height="40" rx="5" fill="#a78bfa" opacity="0.9"/>
+                    <!-- Painéis solares -->
+                    <rect x="-60" y="-10" width="20" height="30" fill="#06b6d4" opacity="0.8"/>
+                    <rect x="40" y="-10" width="20" height="30" fill="#06b6d4" opacity="0.8"/>
+                    <!-- Câmeras -->
+                    <circle cx="-20" cy="0" r="6" fill="#ec4899"/>
+                    <circle cx="20" cy="0" r="6" fill="#ec4899"/>
+                    <!-- Antena -->
+                    <line x1="0" y1="-20" x2="0" y2="-40" stroke="#a78bfa" stroke-width="2"/>
+                    <circle cx="0" y="-40" r="4" fill="#a78bfa"/>
+                    <!-- Sinais -->
+                    <circle cx="0" cy="0" r="80" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.3"/>
+                    <circle cx="0" cy="0" r="120" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.2"/>
+                </g>
+
+                <!-- Título Satélite -->
+                <text x="500" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#a78bfa">
+                    SATELITE NOAA/LANDSAT
+                </text>
+
+                <!-- 📡 SINAIS DO SATÉLITE PARA ESTAÇÕES -->
+                <line x1="450" y1="120" x2="200" y2="320" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.7" marker-end="url(#arrowhead)"/>
+                <line x1="500" y1="120" x2="500" y2="320" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.7" marker-end="url(#arrowhead)"/>
+                <line x1="550" y1="120" x2="800" y2="320" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="5,5" opacity="0.7" marker-end="url(#arrowhead)"/>
+
+                <!-- Definição de seta -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#a78bfa"/>
+                    </marker>
+                </defs>
+
+                <!-- 🌳 ESTAÇÃO 1 - NORTE (Vegetação densa) -->
+                <g id="estacao1" transform="translate(200, 400)">
+                    <!-- Torre de coleta -->
+                    <rect x="-3" y="-100" width="6" height="100" fill="#64748b"/>
+                    <!-- Antena receptora -->
+                    <line x1="0" y1="-100" x2="0" y2="-130" stroke="#60a5fa" stroke-width="2"/>
+                    <circle cx="0" y="-130" r="3" fill="#60a5fa"/>
+                    
+                    <!-- Base com sensores -->
+                    <circle cx="0" cy="0" r="25" fill="#22c55e" opacity="0.8"/>
+                    <circle cx="0" cy="0" r="35" fill="none" stroke="#22c55e" stroke-width="2" opacity="0.4" class="pulse"/>
+                    
+                    <!-- Sensores individuais -->
+                    <circle cx="-15" cy="-10" r="5" fill="#fbbf24" title="Temperatura"/>
+                    <circle cx="15" cy="-10" r="5" fill="#0ea5e9" title="Umidade Ar"/>
+                    <circle cx="0" cy="15" r="5" fill="#06b6d4" title="Umidade Solo"/>
+                    <circle cx="-12" cy="12" r="4" fill="#f97316" title="Pressão"/>
+                    <circle cx="12" cy="12" r="4" fill="#8b5cf6" title="Radiação"/>
+                    
+                    <!-- Vegetação nativa -->
+                    <ellipse cx="-30" cy="25" rx="15" ry="20" fill="#16a34a" opacity="0.6"/>
+                    <ellipse cx="30" cy="30" rx="18" ry="22" fill="#16a34a" opacity="0.6"/>
+                    <path d="M -20 30 Q -25 20 -20 10" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <path d="M 20 30 Q 25 20 20 10" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    
+                    <!-- Label -->
+                    <text x="0" y="-160" text-anchor="middle" font-size="12" font-weight="bold" fill="#22c55e">
+                        ESTACAO 1
+                    </text>
+                    <text x="0" y="-145" text-anchor="middle" font-size="10" fill="#cbd5e1">
+                        Vegetacao Densa
+                    </text>
+                </g>
+
+                <!-- 🌾 ESTAÇÃO 2 - CENTRO (Transição) -->
+                <g id="estacao2" transform="translate(500, 420)">
+                    <!-- Torre de coleta -->
+                    <rect x="-3" y="-120" width="6" height="120" fill="#64748b"/>
+                    <!-- Antena receptora -->
+                    <line x1="0" y1="-120" x2="0" y2="-155" stroke="#60a5fa" stroke-width="2"/>
+                    <circle cx="0" y="-155" r="3" fill="#60a5fa"/>
+                    
+                    <!-- Base com sensores -->
+                    <circle cx="0" cy="0" r="25" fill="#fbbf24" opacity="0.8"/>
+                    <circle cx="0" cy="0" r="35" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.4" class="pulse"/>
+                    
+                    <!-- Sensores individuais -->
+                    <circle cx="-15" cy="-10" r="5" fill="#fbbf24" title="Temperatura"/>
+                    <circle cx="15" cy="-10" r="5" fill="#0ea5e9" title="Umidade Ar"/>
+                    <circle cx="0" cy="15" r="5" fill="#06b6d4" title="Umidade Solo"/>
+                    <circle cx="-12" cy="12" r="4" fill="#f97316" title="Pressão"/>
+                    <circle cx="12" cy="12" r="4" fill="#8b5cf6" title="Radiação"/>
+                    
+                    <!-- Vegetação mista -->
+                    <ellipse cx="-25" cy="20" rx="12" ry="18" fill="#d4af37" opacity="0.5"/>
+                    <ellipse cx="25" cy="25" rx="14" ry="20" fill="#d4af37" opacity="0.5"/>
+                    <path d="M -15 25 Q -18 15 -15 5" stroke="#fbbf24" stroke-width="2" fill="none"/>
+                    <path d="M 15 25 Q 18 15 15 5" stroke="#fbbf24" stroke-width="2" fill="none"/>
+                    
+                    <!-- Label -->
+                    <text x="0" y="-180" text-anchor="middle" font-size="12" font-weight="bold" fill="#fbbf24">
+                        ESTACAO 2
+                    </text>
+                    <text x="0" y="-165" text-anchor="middle" font-size="10" fill="#cbd5e1">
+                        Vegetacao Transitoria
+                    </text>
+                </g>
+
+                <!-- 🌵 ESTAÇÃO 3 - SUL (Vegetação esparsa) -->
+                <g id="estacao3" transform="translate(800, 400)">
+                    <!-- Torre de coleta -->
+                    <rect x="-3" y="-100" width="6" height="100" fill="#64748b"/>
+                    <!-- Antena receptora -->
+                    <line x1="0" y1="-100" x2="0" y2="-130" stroke="#60a5fa" stroke-width="2"/>
+                    <circle cx="0" y="-130" r="3" fill="#60a5fa"/>
+                    
+                    <!-- Base com sensores -->
+                    <circle cx="0" cy="0" r="25" fill="#f97316" opacity="0.8"/>
+                    <circle cx="0" cy="0" r="35" fill="none" stroke="#f97316" stroke-width="2" opacity="0.4" class="pulse"/>
+                    
+                    <!-- Sensores individuais -->
+                    <circle cx="-15" cy="-10" r="5" fill="#fbbf24" title="Temperatura"/>
+                    <circle cx="15" cy="-10" r="5" fill="#0ea5e9" title="Umidade Ar"/>
+                    <circle cx="0" cy="15" r="5" fill="#06b6d4" title="Umidade Solo"/>
+                    <circle cx="-12" cy="12" r="4" fill="#f97316" title="Pressão"/>
+                    <circle cx="12" cy="12" r="4" fill="#8b5cf6" title="Radiação"/>
+                    
+                    <!-- Vegetação esparsa -->
+                    <ellipse cx="-20" cy="25" rx="8" ry="12" fill="#dc2626" opacity="0.4"/>
+                    <ellipse cx="20" cy="28" rx="10" ry="14" fill="#dc2626" opacity="0.4"/>
+                    <path d="M -10 25 Q -12 18 -10 10" stroke="#f97316" stroke-width="1.5" fill="none"/>
+                    <path d="M 10 25 Q 12 18 10 10" stroke="#f97316" stroke-width="1.5" fill="none"/>
+                    
+                    <!-- Label -->
+                    <text x="0" y="-160" text-anchor="middle" font-size="12" font-weight="bold" fill="#f97316">
+                        ESTACAO 3
+                    </text>
+                    <text x="0" y="-145" text-anchor="middle" font-size="10" fill="#cbd5e1">
+                        Vegetacao Esparsa
+                    </text>
+                </g>
+
+                <!-- 🤖 PROCESSAMENTO ML (Centro Bottom) -->
+                <g id="ml-processing" transform="translate(500, 580)">
+                    <rect x="-70" y="-30" width="140" height="60" rx="8" fill="#ec4899" opacity="0.85"/>
+                    <rect x="-70" y="-30" width="140" height="60" rx="8" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.5" class="pulse"/>
+                    
+                    <!-- Ícones de processamento -->
+                    <circle cx="-40" cy="-10" r="6" fill="#fbbf24" opacity="0.8"/>
+                    <circle cx="-40" cy="10" r="6" fill="#fbbf24" opacity="0.8"/>
+                    <circle cx="0" cy="-15" r="8" fill="#34d399" opacity="0.8"/>
+                    <circle cx="0" cy="15" r="8" fill="#34d399" opacity="0.8"/>
+                    <circle cx="40" cy="-10" r="6" fill="#10b981" opacity="0.8"/>
+                    <circle cx="40" cy="10" r="6" fill="#10b981" opacity="0.8"/>
+                    
+                    <!-- Conexões -->
+                    <line x1="-34" y1="-10" x2="-6" y2="-15" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="-34" y1="10" x2="-6" y2="15" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="6" y1="-15" x2="34" y2="-10" stroke="#34d399" stroke-width="1.5" opacity="0.6"/>
+                    <line x1="6" y1="15" x2="34" y2="10" stroke="#34d399" stroke-width="1.5" opacity="0.6"/>
+                    
+                    <!-- Texto -->
+                    <text x="0" y="-5" text-anchor="middle" font-size="11" font-weight="bold" fill="white">
+                        MACHINE LEARNING
+                    </text>
+                    <text x="0" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="white">
+                        RANDOM FOREST + LSTM
+                    </text>
+                </g>
+
+                <!-- 📊 OUTPUT (Previsões) -->
+                <g id="output" transform="translate(280, 650)">
+                    <rect x="-50" y="-25" width="100" height="50" rx="5" fill="#10b981" opacity="0.85"/>
+                    <text x="0" y="-10" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        PREVISOES
+                    </text>
+                    <text x="0" y="8" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        (4 Semanas)
+                    </text>
+                </g>
+
+                <!-- 🚨 ALERTAS (Alertas) -->
+                <g id="alerts" transform="translate(500, 650)">
+                    <rect x="-50" y="-25" width="100" height="50" rx="5" fill="#f97316" opacity="0.85"/>
+                    <text x="0" y="-10" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        ALERTAS
+                    </text>
+                    <text x="0" y="8" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        SECA/CHUVA
+                    </text>
+                </g>
+
+                <!-- 📈 BANCO DE DADOS (Histórico) -->
+                <g id="database" transform="translate(720, 650)">
+                    <rect x="-50" y="-25" width="100" height="50" rx="5" fill="#0ea5e9" opacity="0.85"/>
+                    <text x="0" y="-10" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        BANCO DE DADOS
+                    </text>
+                    <text x="0" y="8" text-anchor="middle" font-size="10" font-weight="bold" fill="white">
+                        HISTORICO
+                    </text>
+                </g>
+
+                <!-- Setas de saída -->
+                <path d="M 470 550 L 330 625" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <path d="M 500 550 L 500 625" fill="none" stroke="#f97316" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <path d="M 530 550 L 670 625" fill="none" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Setas das estações para ML -->
+                <path d="M 200 355 L 450 550" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="3,3" opacity="0.6" marker-end="url(#arrowhead)"/>
+                <path d="M 500 355 L 500 550" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="3,3" opacity="0.6" marker-end="url(#arrowhead)"/>
+                <path d="M 800 355 L 550 550" fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="3,3" opacity="0.6" marker-end="url(#arrowhead)"/>
+            </svg>
+        </div>
+
+        <!-- Detalhes de Integração Satélite-Sensores -->
+        <div class="integration-flow">
+            <h2 class="flow-title">🔄 Fluxo de Integração: Satélite → Sensores → Machine Learning</h2>
+            
+            <div class="flow-container">
+                <div class="flow-item">
+                    <div class="flow-icon">🛰️</div>
+                    <div class="flow-name">Satélite NOAA<br>Coleta de Dados</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">📡</div>
+                    <div class="flow-name">Transmissão<br>em Tempo Real</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🌍</div>
+                    <div class="flow-name">3 Estações<br>Receptoras</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🔬</div>
+                    <div class="flow-name">Sensores<br>Terrestres</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">⚙️</div>
+                    <div class="flow-name">Pré-processamento<br>Dados</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🤖</div>
+                    <div class="flow-name">Algoritmos ML<br>Avançados</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🔮</div>
+                    <div class="flow-name">Previsões<br>4 Semanas</div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🚨</div>
+                    <div class="flow-name">Alertas<br>Automáticos</div>
+                </div>
+            </div>
+
+            <!-- Troca de Dados Detalhada -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="data-exchange">
+                    <h4>📡 Dados do Satélite → Estações</h4>
+                    <div class="data-point">
+                        <strong>NDVI:</strong> <span>Índice de Vegetação (-1 a +1)</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Evapotranspiração:</strong> <span>Taxa de perda de água (mm/dia)</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Cobertura Nuvem:</strong> <span>% de nuvens detectado</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Radiação Solar:</strong> <span>W/m² incidente na superfície</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Temperatura Topo:</strong> <span>Temp da superfície do solo</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Umidade Atmosférica:</strong> <span>% de vapor de água</span>
+                    </div>
+                    <div class="data-point" style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                        ⏱️ <strong>Frequência:</strong> <span>Diária/Semanal (08:30 UTC)</span>
+                    </div>
+                </div>
+
+                <div class="data-exchange">
+                    <h4>🌱 Dados dos Sensores Terrestres</h4>
+                    <div class="data-point">
+                        <strong>Temperatura (ar):</strong> <span>15-35°C ±0.5°C</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Umidade Relativa:</strong> <span>20-95% ±3%</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Umidade Solo (VWC):</strong> <span>0-100% ±2%</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Pressão Atmosférica:</strong> <span>900-1100 hPa ±1 hPa</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Radiação (Piranômetro):</strong> <span>0-1200 W/m²</span>
+                    </div>
+                    <div class="data-point">
+                        <strong>Velocidade do Vento:</strong> <span>0-20 m/s</span>
+                    </div>
+                    <div class="data-point" style="color: #94a3b8; font-size: 0.8rem; margin-top: 1rem;">
+                        ⏱️ <strong>Frequência:</strong> <span>A cada 15 minutos (24/7)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalhes dos Sensores -->
+        <div class="info-box" style="margin-bottom: 3rem;">
+            <h3>🔬 Sensores Técnicos por Estação</h3>
+            <p>Cada uma das 3 estações possui um conjunto completo de sensores calibrados para medir condições microclimáticas específicas do Cerrado:</p>
+            <div class="sensors-detail">
+                <div class="sensor-card">
+                    <strong>Temperatura e Umidade</strong>
+                    <p>Sensor DHT22 com precisão de ±0.5°C e ±2% UR. Montado em abrigo solar para evitar radiação direta.</p>
+                </div>
+                <div class="sensor-card">
+                    <strong>Umidade do Solo</strong>
+                    <p>Sensor capacitivo com calibração específica para solos do Cerrado. Medições em múltiplas profundidades (0, 10, 20, 30 cm).</p>
+                </div>
+                <div class="sensor-card">
+                    <strong>Pressão Atmosférica</strong>
+                    <p>Sensor BMP280 com precisão absoluta de ±1 hPa. Detecta sistemas de baixa pressão associados a chuvas.</p>
+                </div>
+                <div class="sensor-card">
+                    <strong>Radiação Solar</strong>
+                    <p>Piranômetro calibrado para medir radiação solar global incidente em W/m². Essencial para calcular evapotranspiração.</p>
+                </div>
+                <div class="sensor-card">
+                    <strong>Anemômetro</strong>
+                    <p>Medição de velocidade e direção do vento. Importante para modelagem de evapotranspiração e transporte de umidade.</p>
+                </div>
+                <div class="sensor-card">
+                    <strong>Pluviômetro</strong>
+                    <p>Medição de precipitação com resolução de 0.2 mm. Valida previsões de chuva do sistema.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algoritmos ML -->
+        <div class="info-grid">
+            <div class="info-box">
+                <h3>🤖 Random Forest (500 árvores)</h3>
+                <p>Processamento paralelo de múltiplos padrões. Ideal para capturar não-linearidades na relação entre satélite e sensores.</p>
+                <div class="specs">
+                    <div class="spec">
+                        <strong>Profundidade:</strong> <span class="spec-value">20-30 nós</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Features:</strong> <span class="spec-value">40+ variáveis</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Treinamento:</strong> <span class="spec-value">Semanal</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Acurácia:</strong> <span class="spec-value">88-92%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>📊 LSTM Neural Network (4 camadas)</h3>
+                <p>Redes neurais recorrentes para capturar dependências temporais. Essencial para previsões de longo prazo (4 semanas).</p>
+                <div class="specs">
+                    <div class="spec">
+                        <strong>Neurônios:</strong> <span class="spec-value">256 por camada</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Dropout:</strong> <span class="spec-value">30% regularização</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Janela Temporal:</strong> <span class="spec-value">30 dias histórico</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Acurácia:</strong> <span class="spec-value">85-90%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🎯 Ensemble Learning</h3>
+                <p>Combinação ponderada dos 2 modelos. Vote majoridade com confiança associada às previsões.</p>
+                <div class="specs">
+                    <div class="spec">
+                        <strong>Peso RF:</strong> <span class="spec-value">60%</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Peso LSTM:</strong> <span class="spec-value">40%</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Validação:</strong> <span class="spec-value">Cross-validation 5-fold</span>
+                    </div>
+                    <div class="spec">
+                        <strong>Intervalo Confiança:</strong> <span class="spec-value">80-95%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #22c55e;"></div>
+                <span>Estação 1: Vegetação Densa (Norte)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fbbf24;"></div>
+                <span>Estação 2: Transição (Centro)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f97316;"></div>
+                <span>Estação 3: Vegetação Esparsa (Sul)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #a78bfa;"></div>
+                <span>Satélite NOAA/Landsat</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fbbf24;"></div>
+                <span>Temperatura</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #0ea5e9;"></div>
+                <span>Umidade Ar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #06b6d4;"></div>
+                <span>Umidade Solo</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f97316;"></div>
+                <span>Pressão</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b5cf6;"></div>
+                <span>Radiação Solar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ec4899;"></div>
+                <span>Machine Learning</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

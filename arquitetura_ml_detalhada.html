@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura Machine Learning - Sistema de Previsão</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e0e0;
+            padding: 2rem;
+            overflow-x: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 2200px;
+            margin: 0 auto;
+        }
+
+        /* COLUNA 1: ENTRADA DE DADOS */
+        .column {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .column-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        /* Caixas de Dados */
+        .data-box {
+            background: linear-gradient(135deg, rgba(0, 100, 150, 0.3) 0%, rgba(0, 150, 200, 0.2) 100%);
+            border: 2px solid #00a8cc;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            min-width: 280px;
+            box-shadow: 0 8px 16px rgba(0, 168, 204, 0.2);
+            transition: all 0.3s ease;
+            animation: slideInLeft 0.8s ease;
+        }
+
+        .data-box:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 12px 24px rgba(0, 212, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .data-box h3 {
+            color: #00d4ff;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .data-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border-left: 3px solid #00d4ff;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+        }
+
+        .data-item strong {
+            color: #00ffff;
+        }
+
+        /* COLUNA 2: PROCESSAMENTO */
+        .processing-box {
+            background: linear-gradient(135deg, rgba(200, 100, 200, 0.3) 0%, rgba(150, 100, 200, 0.2) 100%);
+            border: 2px solid #cc00ff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            min-width: 320px;
+            box-shadow: 0 8px 16px rgba(204, 0, 255, 0.2);
+            transition: all 0.3s ease;
+            animation: slideInUp 1s ease;
+        }
+
+        .processing-box:hover {
+            border-color: #ff00ff;
+            box-shadow: 0 12px 24px rgba(204, 0, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .processing-box h3 {
+            color: #ff00ff;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .process-step {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border-left: 3px solid #ff00ff;
+            font-size: 0.85rem;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+
+        .process-step strong {
+            color: #ff88ff;
+        }
+
+        /* COLUNA 3: MODELOS ML */
+        .model-box {
+            background: linear-gradient(135deg, rgba(255, 100, 50, 0.3) 0%, rgba(200, 100, 50, 0.2) 100%);
+            border: 2px solid #ff6633;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            min-width: 300px;
+            box-shadow: 0 8px 16px rgba(255, 102, 51, 0.2);
+            transition: all 0.3s ease;
+            animation: slideInRight 1.2s ease;
+        }
+
+        .model-box:hover {
+            border-color: #ff8844;
+            box-shadow: 0 12px 24px rgba(255, 102, 51, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .model-box h3 {
+            color: #ff8844;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .model-params {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid #ff8844;
+        }
+
+        .param {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 136, 68, 0.2);
+            font-size: 0.85rem;
+        }
+
+        .param:last-child {
+            border-bottom: none;
+        }
+
+        .param-name {
+            color: #ffaa88;
+            font-weight: 600;
+        }
+
+        .param-value {
+            color: #ff6633;
+            font-weight: 700;
+        }
+
+        /* COLUNA 4: SAÍDA */
+        .output-box {
+            background: linear-gradient(135deg, rgba(0, 200, 100, 0.3) 0%, rgba(0, 150, 100, 0.2) 100%);
+            border: 2px solid #00cc66;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            min-width: 300px;
+            box-shadow: 0 8px 16px rgba(0, 204, 102, 0.2);
+            transition: all 0.3s ease;
+            animation: slideInRight 1.4s ease;
+        }
+
+        .output-box:hover {
+            border-color: #00ff88;
+            box-shadow: 0 12px 24px rgba(0, 204, 102, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .output-box h3 {
+            color: #00ff88;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .output-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border-left: 3px solid #00ff88;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+        }
+
+        .output-item strong {
+            color: #00ffff;
+        }
+
+        /* FLUXO DE DADOS */
+        .flow-diagram {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 3rem 0;
+            overflow-x: auto;
+        }
+
+        .flow-title {
+            font-size: 1.4rem;
+            color: #00d4ff;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .flow-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 1rem;
+            flex-wrap: wrap;
+            min-width: max-content;
+        }
+
+        .flow-stage {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .stage-icon {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            animation: bounce 2s infinite;
+        }
+
+        .stage-icon:nth-child(odd) {
+            animation-delay: 0s;
+        }
+
+        .stage-icon:nth-child(even) {
+            animation-delay: 0.5s;
+        }
+
+        .stage-label {
+            font-size: 0.95rem;
+            color: #00d4ff;
+            font-weight: 600;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #00d4ff;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* ESTATÍSTICAS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 100, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        /* ENSEMBLE LEARNING */
+        .ensemble-section {
+            background: linear-gradient(135deg, rgba(255, 200, 0, 0.15) 0%, rgba(255, 150, 0, 0.1) 100%);
+            border: 2px solid #ffcc00;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .ensemble-title {
+            color: #ffff00;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .model-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .model-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #ffcc00;
+        }
+
+        .model-name {
+            color: #ffff00;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .feature {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 0.35rem;
+            color: #e0e0e0;
+        }
+
+        /* VALIDAÇÃO */
+        .validation-section {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 200, 136, 0.1) 100%);
+            border: 2px solid #00ff88;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .validation-title {
+            color: #00ff88;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border-top: 3px solid #00ff88;
+        }
+
+        .metric-name {
+            color: #00ffaa;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-bar {
+            height: 20px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 0.35rem;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00ccaa 100%);
+            transition: width 2s ease;
+        }
+
+        .metric-value {
+            color: #00ff88;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        /* ANIMAÇÕES */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 1400px) {
+            .column {
+                display: block;
+                margin-right: 0;
+            }
+
+            .model-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Arquitetura Machine Learning</h1>
+        <p class="subtitle">Pipeline Completo: Coleta → Processamento → Modelos → Previsões</p>
+    </div>
+
+    <div class="container">
+        <!-- FLUXO VISUAL PRINCIPAL -->
+        <div class="flow-diagram">
+            <h2 class="flow-title">📊 Fluxo de Dados Completo do Sistema</h2>
+            <div class="flow-visual">
+                <div class="flow-stage">
+                    <div class="stage-icon">🛰️</div>
+                    <div class="stage-label">Satélite NOAA<br>Coleta</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🌍</div>
+                    <div class="stage-label">Sensores Terrestres<br>3 Estações</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🔄</div>
+                    <div class="stage-label">Pré-processamento<br>Limpeza de Dados</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🔬</div>
+                    <div class="stage-label">Feature Engineering<br>40+ Variáveis</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">⚙️</div>
+                    <div class="stage-label">Normalização<br>Scaling</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🧠</div>
+                    <div class="stage-label">Modelos ML<br>RF + LSTM</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">📈</div>
+                    <div class="stage-label">Ensemble Vote<br>Ponderado</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🎯</div>
+                    <div class="stage-label">Previsões<br>4 Semanas</div>
+                </div>
+                <div class="arrow">→</div>
+
+                <div class="flow-stage">
+                    <div class="stage-icon">🚨</div>
+                    <div class="stage-label">Alertas<br>Automáticos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA 1: ENTRADA DE DADOS -->
+        <h2 style="color: #00d4ff; margin-top: 3rem; margin-bottom: 2rem; font-size: 1.5rem;">📥 1. ENTRADA DE DADOS</h2>
+        <div>
+            <div class="column">
+                <div class="column-title">🛰️ Dados Satélite</div>
+                <div class="data-box">
+                    <h3>NOAA/Landsat</h3>
+                    <div class="data-item">
+                        <strong>NDVI:</strong> Índice de Vegetação (-1 a +1)
+                    </div>
+                    <div class="data-item">
+                        <strong>Evapotranspiração:</strong> 3.5-5.8 mm/dia
+                    </div>
+                    <div class="data-item">
+                        <strong>Cobertura Nuvem:</strong> 0-100%
+                    </div>
+                    <div class="data-item">
+                        <strong>Radiação:</strong> 0-1000 W/m²
+                    </div>
+                    <div class="data-item">
+                        <strong>Frequência:</strong> Diária (08:30 UTC)
+                    </div>
+                    <div class="data-item">
+                        <strong>Resolução:</strong> 30m × 30m
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🌍 Sensores Estação 1</div>
+                <div class="data-box">
+                    <h3>Norte - Vegetação Densa</h3>
+                    <div class="data-item">
+                        <strong>Temperatura:</strong> ±0.5°C
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Ar:</strong> ±3%
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Solo:</strong> ±2%
+                    </div>
+                    <div class="data-item">
+                        <strong>Pressão:</strong> ±1 hPa
+                    </div>
+                    <div class="data-item">
+                        <strong>Radiação:</strong> ±5%
+                    </div>
+                    <div class="data-item">
+                        <strong>Frequência:</strong> 15 minutos
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🌾 Sensores Estação 2</div>
+                <div class="data-box">
+                    <h3>Centro - Transição</h3>
+                    <div class="data-item">
+                        <strong>Temperatura:</strong> ±0.5°C
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Ar:</strong> ±3%
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Solo:</strong> ±2%
+                    </div>
+                    <div class="data-item">
+                        <strong>Pressão:</strong> ±1 hPa
+                    </div>
+                    <div class="data-item">
+                        <strong>Radiação:</strong> ±5%
+                    </div>
+                    <div class="data-item">
+                        <strong>Frequência:</strong> 15 minutos
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🌵 Sensores Estação 3</div>
+                <div class="data-box">
+                    <h3>Sul - Vegetação Esparsa</h3>
+                    <div class="data-item">
+                        <strong>Temperatura:</strong> ±0.5°C
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Ar:</strong> ±3%
+                    </div>
+                    <div class="data-item">
+                        <strong>Umidade Solo:</strong> ±2%
+                    </div>
+                    <div class="data-item">
+                        <strong>Pressão:</strong> ±1 hPa
+                    </div>
+                    <div class="data-item">
+                        <strong>Radiação:</strong> ±5%
+                    </div>
+                    <div class="data-item">
+                        <strong>Frequência:</strong> 15 minutos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA 2: PROCESSAMENTO -->
+        <h2 style="color: #ff00ff; margin-top: 3rem; margin-bottom: 2rem; font-size: 1.5rem;">⚙️ 2. PRÉ-PROCESSAMENTO</h2>
+        <div>
+            <div class="column">
+                <div class="column-title">🔄 Limpeza de Dados</div>
+                <div class="processing-box">
+                    <h3>Data Cleaning</h3>
+                    <div class="process-step">
+                        <strong>Detecção de Outliers:</strong> IQR method para remover valores anormais
+                    </div>
+                    <div class="process-step">
+                        <strong>Imputação:</strong> Forward fill para séries temporais faltando dados
+                    </div>
+                    <div class="process-step">
+                        <strong>Sincronização:</strong> Alinhamento temporal satélite + sensores
+                    </div>
+                    <div class="process-step">
+                        <strong>Validação:</strong> Verifica consistência entre fontes
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🔬 Feature Engineering</div>
+                <div class="processing-box">
+                    <h3>Criação de Variáveis</h3>
+                    <div class="process-step">
+                        <strong>Média Móvel:</strong> 7 e 14 dias (tendência)
+                    </div>
+                    <div class="process-step">
+                        <strong>Taxa Mudança:</strong> Variação temporal de cada variável
+                    </div>
+                    <div class="process-step">
+                        <strong>Índices Compostos:</strong> Combinações de sensores
+                    </div>
+                    <div class="process-step">
+                        <strong>Defasagens:</strong> Valores de dias anteriores (t-1, t-7, t-30)
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">📊 Normalização</div>
+                <div class="processing-box">
+                    <h3>Scaling & Normalization</h3>
+                    <div class="process-step">
+                        <strong>StandardScaler:</strong> Média 0, desvio padrão 1
+                    </div>
+                    <div class="process-step">
+                        <strong>MinMaxScaler:</strong> Intervalo [0, 1]
+                    </div>
+                    <div class="process-step">
+                        <strong>RobustScaler:</strong> Resistente a outliers
+                    </div>
+                    <div class="process-step">
+                        <strong>Dimensionalidade:</strong> 40+ features → entrada dos modelos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA 3: MODELOS ML -->
+        <h2 style="color: #ff8844; margin-top: 3rem; margin-bottom: 2rem; font-size: 1.5rem;">🧠 3. MODELOS MACHINE LEARNING</h2>
+        <div>
+            <div class="column">
+                <div class="column-title">🌲 Random Forest</div>
+                <div class="model-box">
+                    <h3>500 Árvores de Decisão</h3>
+                    <div class="model-params">
+                        <div class="param">
+                            <span class="param-name">Profundidade:</span>
+                            <span class="param-value">20-30 nós</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Amostragem:</span>
+                            <span class="param-value">Bootstrap 70%</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Features/Árvore:</span>
+                            <span class="param-value">sqrt(40) = 6</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Min Amostras Folha:</span>
+                            <span class="param-value">5</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Paralelo:</span>
+                            <span class="param-value">Sim (8 cores)</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Acurácia:</span>
+                            <span class="param-value">88-92%</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Tempo Treino:</span>
+                            <span class="param-value">45 segundos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🧠 LSTM Neural Network</div>
+                <div class="model-box">
+                    <h3>4 Camadas Recorrentes</h3>
+                    <div class="model-params">
+                        <div class="param">
+                            <span class="param-name">Neurônios/Camada:</span>
+                            <span class="param-value">256</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Dropout:</span>
+                            <span class="param-value">30%</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Janela Temporal:</span>
+                            <span class="param-value">30 dias (720h)</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Optimizer:</span>
+                            <span class="param-value">Adam (lr=0.001)</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Loss Function:</span>
+                            <span class="param-value">MSE</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Acurácia:</span>
+                            <span class="param-value">85-90%</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Tempo Treino:</span>
+                            <span class="param-value">120 segundos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">⚡ Gradient Boosting</div>
+                <div class="model-box">
+                    <h3>XGBoost 200 Estimadores</h3>
+                    <div class="model-params">
+                        <div class="param">
+                            <span class="param-name">Taxa Aprendizado:</span>
+                            <span class="param-value">0.1</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Max Profundidade:</span>
+                            <span class="param-value">7</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Subsample:</span>
+                            <span class="param-value">0.8</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Colsample/Árvore:</span>
+                            <span class="param-value">0.8</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Regularização L2:</span>
+                            <span class="param-value">1.0</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Acurácia:</span>
+                            <span class="param-value">87-91%</span>
+                        </div>
+                        <div class="param">
+                            <span class="param-name">Tempo Treino:</span>
+                            <span class="param-value">60 segundos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENSEMBLE LEARNING -->
+        <div class="ensemble-section">
+            <h2 class="ensemble-title">🎯 ENSEMBLE LEARNING - Votação Ponderada</h2>
+            <div class="model-comparison">
+                <div class="model-item">
+                    <div class="model-name">🌲 Random Forest</div>
+                    <div class="feature">Peso: 35%</div>
+                    <div class="feature">Especialista em: Padrões não-lineares</div>
+                    <div class="feature">Reduz: Overfitting</div>
+                    <div class="feature">Força: Robustez</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-name">🧠 LSTM Neural</div>
+                    <div class="feature">Peso: 35%</div>
+                    <div class="feature">Especialista em: Séries temporais</div>
+                    <div class="feature">Captura: Padrões longos</div>
+                    <div class="feature">Força: Dependências temporais</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-name">⚡ XGBoost</div>
+                    <div class="feature">Peso: 30%</div>
+                    <div class="feature">Especialista em: Gradientes</div>
+                    <div class="feature">Otimiza: Residuais</div>
+                    <div class="feature">Força: Precisão</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VALIDAÇÃO -->
+        <div class="validation-section">
+            <h2 class="validation-title">✅ VALIDAÇÃO E MÉTRICAS</h2>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-name">Acurácia Geral</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 90%;"></div>
+                    </div>
+                    <div class="metric-value">90.5%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Precisão Seca</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 88%;"></div>
+                    </div>
+                    <div class="metric-value">88.2%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">Recall Chuva</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 87%;"></div>
+                    </div>
+                    <div class="metric-value">87.6%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">F1-Score Combinado</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 89%;"></div>
+                    </div>
+                    <div class="metric-value">89.1%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">ROC-AUC</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 92%;"></div>
+                    </div>
+                    <div class="metric-value">0.925</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-name">RMSE (Umidade)</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 85%;"></div>
+                    </div>
+                    <div class="metric-value">3.2%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA 4: SAÍDA -->
+        <h2 style="color: #00ff88; margin-top: 3rem; margin-bottom: 2rem; font-size: 1.5rem;">📤 4. SAÍDA - PREVISÕES E ALERTAS</h2>
+        <div>
+            <div class="column">
+                <div class="column-title">🔮 Previsões (4 Semanas)</div>
+                <div class="output-box">
+                    <h3>Probabilidades Semanais</h3>
+                    <div class="output-item">
+                        <strong>Semana 1:</strong> 15% seca | 35% chuva | 50% normal
+                    </div>
+                    <div class="output-item">
+                        <strong>Semana 2:</strong> 28% seca | 25% chuva | 47% normal
+                    </div>
+                    <div class="output-item">
+                        <strong>Semana 3:</strong> 42% seca | 18% chuva | 40% normal
+                    </div>
+                    <div class="output-item">
+                        <strong>Semana 4:</strong> 55% seca | 12% chuva | 33% normal
+                    </div>
+                    <div class="output-item">
+                        <strong>Intervalo Confiança:</strong> ±5% (IC 95%)
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">🚨 Sistema de Alertas</div>
+                <div class="output-box">
+                    <h3>Notificações Automáticas</h3>
+                    <div class="output-item">
+                        <strong>ALERTA VERMELHO:</strong> Seca >60% | Chuva <10%
+                    </div>
+                    <div class="output-item">
+                        <strong>ALERTA LARANJA:</strong> Seca 40-60% | Chuva 10-20%
+                    </div>
+                    <div class="output-item">
+                        <strong>ALERTA AMARELO:</strong> Variação >20% vs histórico
+                    </div>
+                    <div class="output-item">
+                        <strong>Canais Entrega:</strong> Email + SMS + API
+                    </div>
+                    <div class="output-item">
+                        <strong>Tempo Antecedência:</strong> 2-4 semanas
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">💾 Banco de Dados Histórico</div>
+                <div class="output-box">
+                    <h3>Armazenamento de Dados</h3>
+                    <div class="output-item">
+                        <strong>Histórico Sensores:</strong> 12 meses (630k pontos)
+                    </div>
+                    <div class="output-item">
+                        <strong>Previsões Anteriores:</strong> 52 semanas completas
+                    </div>
+                    <div class="output-item">
+                        <strong>Dados Validação:</strong> Para continuous learning
+                    </div>
+                    <div class="output-item">
+                        <strong>Retenção:</strong> 24 meses (regulatory)
+                    </div>
+                    <div class="output-item">
+                        <strong>Backup:</strong> Redundância 3 regiões
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-title">📊 Dashboard Web</div>
+                <div class="output-box">
+                    <h3>Interface do Usuário</h3>
+                    <div class="output-item">
+                        <strong>Gráficos:</strong> Tendências, comparações, previsões
+                    </div>
+                    <div class="output-item">
+                        <strong>Mapas:</strong> 3 estações com dados georreferenciados
+                    </div>
+                    <div class="output-item">
+                        <strong>Tabelas:</strong> Histórico detalhado e exporte CSV
+                    </div>
+                    <div class="output-item">
+                        <strong>Relatórios:</strong> PDF automáticos semanais
+                    </div>
+                    <div class="output-item">
+                        <strong>Acesso:</strong> Web + Mobile (iOS/Android)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTATÍSTICAS FINAIS -->
+        <h2 style="color: #00d4ff; margin-top: 3rem; margin-bottom: 2rem; font-size: 1.5rem;">📊 ESTATÍSTICAS DO SISTEMA</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">40+</div>
+                <div class="stat-label">Features Engenheiradas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Modelos Ensemble</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">900K+</div>
+                <div class="stat-label">Pontos de Treino</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">90.5%</div>
+                <div class="stat-label">Acurácia Média</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">15min</div>
+                <div class="stat-label">Coleta Sensores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Semanas Antecipação</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">225s</div>
+                <div class="stat-label">Treino Semanal</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Monitoramento</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
